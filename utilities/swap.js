@@ -688,7 +688,7 @@ async function swapToken(route, walletSending, gasSettings, blockchainSelected, 
 // Function to multiple swap on Odos
 async function setInfoForOdosMultiple(wallets, tokenContracts) {
     console.log(inputData.chalk.blue.bold("SWAP TOKENS\n"));
-    console.log(inputData.chalk.blue("Odos - Multiple swap\n"));
+    console.log(inputData.chalk.blue("Odos - Multiple swap"));
     
     const fastSwapConfig = constants.getFastSwapConfig();
 
@@ -698,7 +698,7 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
             // Sets the wallet
             let walletSending = wallets[i];
 
-            console.log(inputData.chalk.rgb(255, 136, 0)(`${walletSending.name}: ${walletSending.wallet.address}\n`));
+            console.log(inputData.chalk.rgb(255, 136, 0)(`\n${walletSending.name}: ${walletSending.wallet.address}\n`));
 
             // Sets the provider
             const blockchainSelected = providerUtility.getBlockchainIndex(fastSwapConfig.blockchainName);
@@ -811,10 +811,13 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
 
                 // Sending confirmation before executing the tx
                 sendingConfirmation = await inputData.getAnswer(`Yes[Y], Next Wallet[N] or Update best route[U]: `);
-                if (sendingConfirmation.toUpperCase() == 'N') {
-                    continue;
-                }   
-            }        
+                  
+            }
+            
+            // Next wallet
+            if (sendingConfirmation.toUpperCase() == 'N') {
+                continue;
+            } 
 
             let approveTx;
             // Only approves if token In is a token
@@ -865,7 +868,7 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
 // Function to multiple swap on Uniswap
 async function setInfoForUniswapMultiple(wallets, tokenContracts) {
     console.log(inputData.chalk.blue.bold("SWAP TOKENS\n"));
-    console.log(inputData.chalk.blue("Uniswap - Multiple swap\n"));
+    console.log(inputData.chalk.blue("Uniswap - Multiple swap"));
     
     const fastSwapConfig = constants.getFastSwapConfig();
 
@@ -875,7 +878,7 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
             // Sets the wallet
             let walletSending = wallets[i];
 
-            console.log(inputData.chalk.rgb(255, 136, 0)(`${walletSending.name}: ${walletSending.wallet.address}\n`));
+            console.log(inputData.chalk.rgb(255, 136, 0)(`\n${walletSending.name}: ${walletSending.wallet.address}\n`));
 
             // Sets the provider
             const blockchainSelected = providerUtility.getBlockchainIndex(fastSwapConfig.blockchainName);
@@ -985,10 +988,13 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
 
                 // Sending confirmation before executing the tx
                 sendingConfirmation = await inputData.getAnswer(`Yes[Y], Next Wallet[N] or Update best route[U]: `);
-                if (sendingConfirmation.toUpperCase() == 'N') {
-                    continue;
-                } 
+                
             }
+
+            // Next wallet
+            if (sendingConfirmation.toUpperCase() == 'N') {
+                continue;
+            } 
 
             let approveTx;
             // Only approves if token In is a token
@@ -1030,7 +1036,7 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
         }        
     }    
 
-    console.log('Multiple wallet swap finished!');
+    console.log('\nMultiple wallet swap finished!');
 
     await inputData.introToContinue();
 }

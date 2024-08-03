@@ -22,7 +22,6 @@ async function getFeeData() {
     await inputData.introToContinue();
 }
 
-
 module.exports = {
     getFeeData,
 }

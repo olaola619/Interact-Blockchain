@@ -137,7 +137,7 @@ function initializeBlockchainsData(){
 // Here you will define all the parameters necessary to swap a coin/token from ALL THE WALLETS to a another coin/token as fast as possible
 
 // Loads when started the FastSwapData, turn this to false for not missclicking in the swap menu
-const autoLoadFastSwapData = false;
+const autoLoadFastSwapData = true;
 
 // Class for fast swap config
 class FastSwapConfig {
@@ -162,17 +162,17 @@ let fastSwapConfig;
 // Defines all the parameters for the fast Swap. 
 // REMEMBER TO SET TO TRUE THE BLOCKCAIN IN blockchainsBase IN ORDER TO ADD ALL THE NECESSARY PARAMETERS
 const fastSwapConfigBase = [
-    'Arbitrum',                                                     // Blockchain name, MUST USE THE SAME NAME THAT YOU DEFINE IN blockchainsBase
-    true,                                                           // true for using the native coin as the coin to swap or false for a token
-    '',                                                             // If the above parameter is false (means a token) defines the token address
+    'Ethereum Sepolia',                                                     // Blockchain name, MUST USE THE SAME NAME THAT YOU DEFINE IN blockchainsBase
+    false,                                                           // true for using the native coin as the coin to swap or false for a token
+    '0x1c7d4b196cb0c7b01d743fbc6116a902379c7238',                                                             // If the above parameter is false (means a token) defines the token address
     '1%',                                                           // Amount of the token to swap. ALWAYS IN %
     false,                                                          // true for using the native coin as the coin to receive from the swap or false for a token
-    '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',                   // If the above parameter is false (means a token) defines the token address
-    '0.5%',                                                         // Slippage. ALWAYS IN %
+    '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14',                   // If the above parameter is false (means a token) defines the token address
+    '5%',                                                         // Slippage. ALWAYS IN %
     '300000',                                                       // Gas limit for approvals
     '1000000',                                                      // Gas limit for the swap
-    '0',                                                            // Max priority fee gas, in GWEI
-    '0.0135'                                                        // Max gas, IN GWEI
+    '2',                                                            // Max priority fee gas, in GWEI
+    '10'                                                        // Max gas, IN GWEI
 ];
 
 // Function to initialize the fast swap config
