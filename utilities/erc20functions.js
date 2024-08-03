@@ -43,27 +43,52 @@ async function tokenMenu(wallets, tokenContracts){
       userTokenMenuOption = await inputData.getAnswer(`\nChoose an option: `);
 
       switch (Number(userTokenMenuOption)) {
-          // Import wallet from private key
+          // Import token from contract address
           case 1:
-              console.clear();
-              console.log(inputData.chalk.blue.bold("TOKEN MANAGER"));
-              await importTokenFromContractFromAddress(tokenContracts);
-              await inputData.introToContinue();
+              try{
+                console.clear();
+                console.log(inputData.chalk.blue.bold("TOKEN MANAGER"));
+                await importTokenFromContractFromAddress(tokenContracts);
+                await inputData.introToContinue();
+              } catch (error) {
+                console.log(inputData.chalk.red('There were an error importing the token from contract address'));
+                writeLog(`There were an error importing the token from contract address ${error}`);
+                inputData.introToContinue();
+              }   
               break;
           // Import all the tokens from the env file
           case 2:
-              console.clear();
-              console.log(inputData.chalk.blue.bold("TOKEN MANAGER\n"));
-              await importTokensFromConstants(tokenContracts);
-              await inputData.introToContinue();
-              break;
+                try{
+                    console.clear();
+                    console.log(inputData.chalk.blue.bold("TOKEN MANAGER\n"));
+                    await importTokensFromConstants(tokenContracts);
+                    await inputData.introToContinue();
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error importing the tokens from env file'));
+                    writeLog(`There were an error importing the tokens from env file ${error}`);
+                    inputData.introToContinue();
+                } 
+                break;
+          // Display all the token balances from one wallet
           case 3:
+            try{
               await displayTokenWalletBalances(wallets, tokenContracts);
-              break;
+            } catch (error) {
+                console.log(inputData.chalk.red('There were an error with the tokens balances from the wallet'));
+                writeLog(`There were an error with the tokens balances from the wallet ${error}`);
+                inputData.introToContinue();
+            } 
+            break;
           // Display all the token amounts from all the wallets
           case 4:
+            try{
               await displayTokensWalletsBalances(wallets, tokenContracts);
-              break;
+            } catch (error) {
+                console.log(inputData.chalk.red('There were an error with the tokens balances from all the wallets'));
+                writeLog(`There were an error with the tokens balances from all the wallets ${error}`);
+                inputData.introToContinue();
+            } 
+            break;
       }
   }
 

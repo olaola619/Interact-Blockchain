@@ -15,16 +15,22 @@ async function transferMenu(wallets, tokenContracts){
         console.log(inputData.chalk.blue.bold("TRANSFERS\n"));
         console.log(inputData.chalk.bold('Select an option'));
         console.log(inputData.chalk.bold('  [1]:'), 'Simple transfer');
-        console.log(inputData.chalk.bold('  [2]:'), 'Transfer from all wallets to one wallet');
+        console.log(inputData.chalk.bold('  [2]:'), 'Transfer from all wallets to one wallet [NOT IMPLEMENTED YET]');
         console.log(inputData.chalk.bold('  [10]:'), 'Reteurn to main menu');
     
         transferMenuOption = await inputData.getAnswer(`\nChoose an option: `);
 
         switch (Number(transferMenuOption)) {
-            // Send native coin to a wallet
+            // Transfer coin to a wallet
             case 1:
-                console.clear();
-                await transferCoin(wallets, tokenContracts);
+                try {
+                    console.clear();
+                    await transferCoin(wallets, tokenContracts);
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error transfering the coin to the wallet'));
+                    writeLog(`There were an error transfering the coin to the wallet ${error}`);
+                    inputData.introToContinue();
+                } 
                 break;
             // Import all the wallets from the env file
             case 2:

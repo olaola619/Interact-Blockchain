@@ -30,24 +30,42 @@ async function walletMenu(wallets){
         switch (Number(userWalletMenuOption)) {
             // Import wallet from private key
             case 1:
-                console.clear();
-                console.log(inputData.chalk.blue.bold("WALLET MANAGER\n"));
-                await importWalletFromPrivateKey(wallets);
-                await inputData.introToContinue();
+                try{
+                    console.clear();
+                    console.log(inputData.chalk.blue.bold("WALLET MANAGER\n"));
+                    await importWalletFromPrivateKey(wallets);
+                    await inputData.introToContinue();
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error importing the wallet from private key'));
+                    writeLog(`There were an error importing the wallet from private key ${error}`);
+                    inputData.introToContinue();
+                }   
                 break;
             // Import all the wallets from the env file
             case 2:
-                console.clear();
-                await importWalletsFromEnvFile(wallets);
-                await inputData.introToContinue();
+                try{
+                    console.clear();
+                    await importWalletsFromEnvFile(wallets);
+                    await inputData.introToContinue();
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error importing the wallet from env file'));
+                    writeLog(`There were an error importing the wallet from env file ${error}`);
+                    inputData.introToContinue();
+                }  
                 break;
             // Display all the wallets imported
             case 3:
-                console.clear();
-                console.log(inputData.chalk.blue.bold("WALLET MANAGER\n"));
-                console.log("WALLETS\n");
-                showWallets(wallets);
-                await inputData.getAnswer('\nPress intro to go back to the menu\n');
+                try {
+                    console.clear();
+                    console.log(inputData.chalk.blue.bold("WALLET MANAGER\n"));
+                    console.log("WALLETS\n");
+                    showWallets(wallets);
+                    await inputData.getAnswer('\nPress intro to go back to the menu\n');
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error displaying all the wallets imported'));
+                    writeLog(`There were an error displaying all the wallets imported ${error}`);
+                    inputData.introToContinue();
+                }  
                 break;
         }
     }

@@ -79,16 +79,28 @@ async function main(){
         switch (Number(userOption)) {
             // Import all data from Env file
             case 1:
-                ({wallets, tokenContracts} = await importData(wallets, tokenContracts));
+                try {
+                    ({wallets, tokenContracts} = await importData(wallets, tokenContracts));
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error importing the data'));
+                    writeLog(`There were an error importing the data ${error}`);
+                    inputData.introToContinue();
+                }
                 break;
             // Select provider
             case 2:
-                console.clear();
-                console.log(inputData.chalk.blue.bold("BLOCKCHAIN MANAGER"));
-                const blockchainSelected = await providerUtility.selectBlockchainMenu();
-                const provider = await providerUtility.getProvider(blockchainSelected); 
-                await providerUtility.checkProvider(provider, blockchainSelected);
-                await inputData.introToContinue();
+                try {
+                    console.clear();
+                    console.log(inputData.chalk.blue.bold("BLOCKCHAIN MANAGER"));
+                    const blockchainSelected = await providerUtility.selectBlockchainMenu();
+                    const provider = await providerUtility.getProvider(blockchainSelected); 
+                    await providerUtility.checkProvider(provider, blockchainSelected);
+                    await inputData.introToContinue();
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error checking the provider'));
+                    writeLog(`There were an error checking the provider ${error}`);
+                    inputData.introToContinue();
+                }   
                 break;
             // Wallet manager
             case 3:

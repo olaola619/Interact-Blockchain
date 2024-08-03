@@ -32,28 +32,58 @@ async function swapMenu(wallets, tokenContracts){
         switch (Number(userSwapMenuOption)) {
             // uniswap simple swap
             case 1:
-                console.clear();
-                await setInfoForUniswap(wallets, tokenContracts);
+                try {
+                    console.clear();
+                    await setInfoForUniswap(wallets, tokenContracts);
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error in Uniswap single swap'));
+                    writeLog(`There were an error in Uniswap single swap ${error}`);
+                    inputData.introToContinue();
+                }
                 break;
             // Odos simple swap
             case 2:
-                console.clear();
-                await setInfoForOdos(wallets, tokenContracts);
+                try {
+                    console.clear();
+                    await setInfoForOdos(wallets, tokenContracts);
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error in Odos single swap'));
+                    writeLog(`There were an error in Odos single swap ${error}`);
+                    inputData.introToContinue();
+                }
                 break;
             // Uniswap - multiple wallets swap
             case 3:
-                console.clear();
-                await setInfoForUniswapMultiple(wallets, tokenContracts)
+                try {
+                    console.clear();
+                    await setInfoForUniswapMultiple(wallets, tokenContracts)
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error in Uniswap multiple swap'));
+                    writeLog(`There were an error in Uniswap multiple swap ${error}`);
+                    inputData.introToContinue();
+                }   
                 break;
             // Odos - multiple wallets swap
             case 4:
-                console.clear();
-                await setInfoForOdosMultiple(wallets, tokenContracts);
+                try {
+                    console.clear();
+                    await setInfoForOdosMultiple(wallets, tokenContracts);
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error in Odos multiple swap'));
+                    writeLog(`There were an error in Odos multiple swap ${error}`);
+                    inputData.introToContinue();
+                }
                 break;
             // Fast swap config checking
             case 5:
-                console.clear();
-                await checkFastSwapConfig(wallets, tokenContracts);
+                try{
+                    console.clear();
+                    await checkFastSwapConfig(wallets, tokenContracts);
+                } catch (error) {
+                    console.log(inputData.chalk.red('There were an error checking the fast swap config'));
+                    writeLog(`There were an error checking the fast swap config ${error}`);
+                    inputData.introToContinue();
+                }
                 break;
         }
     }
@@ -276,7 +306,7 @@ async function setInfoForOdos(wallets, tokenContracts) {
         const swapResumeString = 
             inputData.chalk.bold('\nSwap resume\n') +
             `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
-            `Swap ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$\n` +
+            `Swap ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$ --> ${(amountOutInUSD/Number(readableAmountToSwap)).toFixed(4)}$/${tokenInSymbol}\n` +
             `Price impact: ${Number(priceImpact).toFixed(4)}%\n` +
             `Gas limit Approve: ${gasSettingsApproval.limit}\n` +
             `Last block base fee: ${ethers.utils.formatUnits(gasSettingsSwap.lastBaseFee, "gwei")} gwei\n` +
@@ -773,7 +803,7 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
                 const swapResumeString = 
                 inputData.chalk.bold('\nSwap resume\n') +
                 `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
-                `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$\n` +
+                `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$ --> ${(amountOutInUSD/Number(readableAmountToSwap)).toFixed(4)}$/${tokenInSymbol}\n` +
                 `Price impact: ${Number(priceImpact).toFixed(4)}%\n`;
 
                 console.log(swapResumeString);
@@ -952,7 +982,7 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
 
                 console.log(swapResumeString);
                 writeLog(swapResumeString);
-                
+
                 // Sending confirmation before executing the tx
                 sendingConfirmation = await inputData.getAnswer(`Yes[Y], Next Wallet[N] or Update best route[U]: `);
                 if (sendingConfirmation.toUpperCase() == 'N') {
