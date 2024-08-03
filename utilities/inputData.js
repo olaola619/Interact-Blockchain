@@ -47,9 +47,20 @@ function formatDate(date) {
 }
 
 function writeLog(message) {
-    const logFilePath = path.join(__dirname, '../logs/log.log');
+    const logDir = path.join(__dirname, '../logs');
+    const logFilePath = path.join(logDir, 'log.log');
     const timestamp = formatDate(new Date());
     const logMessage = `${timestamp} ${message}\n`;
+
+    // Create folder if not exists
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    // Create file if not exists
+    if (!fs.existsSync(logFilePath)) {
+        fs.writeFileSync(logFilePath, '');
+    }
 
     fs.appendFileSync(logFilePath, logMessage, (err) => {
         if (err) {
