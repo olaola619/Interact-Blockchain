@@ -248,12 +248,14 @@ async function setInfoForOdos(wallets, tokenContracts) {
 
     // Find best route
     let sendingConfirmation = 'U';
-
-    while (sendingConfirmation.toUpperCase() != 'Y' || sendingConfirmation.toUpperCase() != 'N') {
+    let bestRoute;
+    let priceImpact;
+    let amountOutReadable;
+    let amountOutInUSD;
+    while (sendingConfirmation.toUpperCase() != 'Y' && sendingConfirmation.toUpperCase() != 'N') {
 
         let apiTryRequests = 1;
-        let bestRoute;
-        let priceImpact;
+        
         while(apiTryRequests <= constants.maxApiTryRequests) {
             console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Odos...`);        
             [bestRoute, priceImpact] = await getRoute.findBestRouteOdos(walletSending.wallet.address, tokenInAddress, amountIn, tokenOutAddress, slippage, networkProvider);
@@ -267,8 +269,8 @@ async function setInfoForOdos(wallets, tokenContracts) {
             apiTryRequests++;
         }
         
-        const amountOutReadable = ethers.utils.formatUnits(bestRoute.outputTokens[0].amount, tokenOut.decimals).toString();
-        const amountOutInUSD = Number(bestRoute.outValues[0]);
+        amountOutReadable = ethers.utils.formatUnits(bestRoute.outputTokens[0].amount, tokenOut.decimals).toString();
+        amountOutInUSD = Number(bestRoute.outValues[0]);
 
         // Best route result
         const swapResumeString = 
@@ -460,11 +462,13 @@ async function setInfoForUniswap(wallets, tokenContracts) {
 
     // Find best route
     let sendingConfirmation = 'U';
-
-    while (sendingConfirmation.toUpperCase() != 'Y' || sendingConfirmation.toUpperCase() != 'N') {
+    let bestRoute;
+    let amountOutReadable;
+    let priceImpact;
+    while (sendingConfirmation.toUpperCase() != 'Y' && sendingConfirmation.toUpperCase() != 'N') {
 
         let apiTryRequests = 1;
-        let bestRoute;
+        
         while(apiTryRequests <= constants.maxApiTryRequests) {
             console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Uniswap...`);
             
@@ -479,8 +483,8 @@ async function setInfoForUniswap(wallets, tokenContracts) {
             apiTryRequests++;
         }
 
-        const amountOutReadable = bestRoute.trade.outputAmount.toSignificant(6);
-        const priceImpact = bestRoute.trade.priceImpact.toSignificant(4);
+        amountOutReadable = bestRoute.trade.outputAmount.toSignificant(6);
+        priceImpact = bestRoute.trade.priceImpact.toSignificant(4);
 
         // Best route result
         const swapResumeString = 
@@ -498,7 +502,7 @@ async function setInfoForUniswap(wallets, tokenContracts) {
         writeLog(swapResumeString);
 
         // Sending confirmation before executing the tx
-        const sendingConfirmation = await inputData.getAnswer(`Yes[Y], No[N] or Update best route[U]: `);
+        sendingConfirmation = await inputData.getAnswer(`Yes[Y], No[N] or Update best route[U]: `);
         if (sendingConfirmation.toUpperCase() == 'N') {
             console.log(inputData.chalk.red('\nSwap cancelled'));
             writeLog('Swap cancelled');
@@ -517,50 +521,6 @@ async function setInfoForUniswap(wallets, tokenContracts) {
     await swapToken(bestRoute, walletSending, gasSettingsSwap, blockchainSelected, walletSending.nonce++, 0);
 
     await inputData.introToContinue();
-}
-
-// Not in use
-async function noInUse(wallets, tokenContracts) {
-
-    /*
-    let tokenIninitialReadable;
-    if (tokenInputSelected == tokensCount) {
-        tokenIninitialReadable = nativeCoinBalance;
-    } else {
-        tokenIninitialReadable = await erc20functions.tokenBalance(tokenContracts[blockchainSelected][tokenInputSelected].contract, tokenIn.decimals,walletSending.wallet.address);
-    }
-
-    let tokenOutinitialReadable;
-    if (tokenOutputSelected == tokensCount) {
-        tokenOutinitialReadable = nativeCoinBalance;
-    } else {
-        tokenOutinitialReadable = await erc20functions.tokenBalance(tokenContracts[blockchainSelected][tokenOutputSelected].contract, tokenOut.decimals,walletSending.wallet.address);
-    }
-    */
-    
-
-    /*
-    let tokenInFinalReadable;
-    let tokenOutFinalReadable;
-    let finalSwapResumeString;
-    if (tokenInputSelected == tokensCount) {
-        tokenInFinalReadable = await erc20functions.getNativeCoinBalance(provider, walletSending.wallet.address);
-    } else {
-        tokenInFinalReadable = await erc20functions.tokenBalance(tokenContracts[blockchainSelected][tokenInputSelected].contract, tokenIn.decimals,walletSending.wallet.address);
-    }
-
-    if (tokenOutputSelected == tokensCount) {  
-        tokenOutFinalReadable = await erc20functions.getNativeCoinBalance(provider, walletSending.wallet.address);
-    } else {
-        tokenOutFinalReadable = await erc20functions.tokenBalance(tokenContracts[blockchainSelected][tokenOutputSelected].contract, tokenOut.decimals,walletSending.wallet.address);
-    }
-    finalSwapResumeString =
-        `Initial: ${tokenIninitialReadable} $${tokenInSymbol} --> Final: ${tokenInFinalReadable} $${tokenInSymbol}\n` + 
-        `Initial: ${tokenOutinitialReadable} $${tokenOutSymbol} --> Final: ${tokenOutFinalReadable} $${tokenOutSymbol}`;
-    console.log(finalSwapResumeString);
-    writeLog(finalSwapResumeString);
-    */
-    
 }
 
 async function approveTokenFastSwap(routerAddress, tokenContract, amountIn, nonce, gasSettings) {
@@ -754,7 +714,7 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
             // Checks if the wallet has no amount of the input token to skip it
             if (Number(readableAmountToSwap) <= 0) {
                 console.log(`${walletSending.name}: has 0 ${tokenInSymbol} skipping...`);
-                break;
+                continue;
             }
 
             // Output token
@@ -778,40 +738,53 @@ async function setInfoForOdosMultiple(wallets, tokenContracts) {
             let slippage = Number(slippageInputParsed).toFixed(2);
             
             // Find best route
-            let apiTryRequests = 1;
             let bestRoute;
             let priceImpact;
-            while(apiTryRequests <= constants.maxApiTryRequests) {
-                console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Odos...`);
+            let gasSettingsApproval;
+            let gasSettingsSwap;
+            let sendingConfirmation = 'U';
+
+            while (sendingConfirmation.toUpperCase() != 'Y' && sendingConfirmation.toUpperCase() != 'N') {
                 
-                [bestRoute, priceImpact] = await getRoute.findBestRouteOdos(walletSending.wallet.address, tokenInAddress, amountIn, tokenOutAddress, slippage, networkProvider);
-                if (bestRoute != null) {
+                let apiTryRequests = 1;
+                while(apiTryRequests <= constants.maxApiTryRequests) {
+                    console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Odos...`);
+                    
+                    [bestRoute, priceImpact] = await getRoute.findBestRouteOdos(walletSending.wallet.address, tokenInAddress, amountIn, tokenOutAddress, slippage, networkProvider);
+                    if (bestRoute != null) {
+                        break;
+                    }
+                    await inputData.delay(1000);
+                    apiTryRequests++;
+                }
+                // Checks if it couldn't find the best route to move to the next wallet
+                if (bestRoute == null) {
                     break;
                 }
-                await inputData.delay(1000);
-                apiTryRequests++;
-            }
-            // Checks if it couldn't find the best route to move to the next wallet
-            if (bestRoute == null) {
-                break;
-            }
-            
-            const amountOutReadable = ethers.utils.formatUnits(bestRoute.outputTokens[0].amount, tokenOut.decimals).toString();
-            const amountOutInUSD = Number(bestRoute.outValues[0]);
+                
+                const amountOutReadable = ethers.utils.formatUnits(bestRoute.outputTokens[0].amount, tokenOut.decimals).toString();
+                const amountOutInUSD = Number(bestRoute.outValues[0]);
 
-            // Gas settings
-            const gasSettingsApproval = new providerUtility.GasSettings(fastSwapConfig.gasLimitApprove, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
-            const gasSettingsSwap = new providerUtility.GasSettings(fastSwapConfig.gasLimitSwap, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
+                // Gas settings
+                gasSettingsApproval = new providerUtility.GasSettings(fastSwapConfig.gasLimitApprove, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
+                gasSettingsSwap = new providerUtility.GasSettings(fastSwapConfig.gasLimitSwap, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
 
-            // Best route result
-            const swapResumeString = 
-            inputData.chalk.bold('\nSwap resume\n') +
-            `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
-            `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$\n` +
-            `Price impact: ${Number(priceImpact).toFixed(4)}%\n`;
+                // Best route result
+                const swapResumeString = 
+                inputData.chalk.bold('\nSwap resume\n') +
+                `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
+                `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${Number(amountOutReadable).toFixed(6)} $${tokenOutSymbol} worth ${amountOutInUSD.toFixed(4)}$\n` +
+                `Price impact: ${Number(priceImpact).toFixed(4)}%\n`;
 
-            console.log(swapResumeString);
-            writeLog(swapResumeString);
+                console.log(swapResumeString);
+                writeLog(swapResumeString);
+
+                // Sending confirmation before executing the tx
+                sendingConfirmation = await inputData.getAnswer(`Yes[Y], Next Wallet[N] or Update best route[U]: `);
+                if (sendingConfirmation.toUpperCase() == 'N') {
+                    continue;
+                }   
+            }        
 
             let approveTx;
             // Only approves if token In is a token
@@ -918,7 +891,7 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
             // Checks if the wallet has no amount of the input token to skip it
             if (Number(readableAmountToSwap) <= 0) {
                 console.log(`${walletSending.name}: has 0 ${tokenInSymbol} skipping...`);
-                break;
+                continue;
             }
 
             // Output token
@@ -940,39 +913,52 @@ async function setInfoForUniswapMultiple(wallets, tokenContracts) {
             slippage = new Percent(slippage, 10000);
             
             // Find best route
-            let apiTryRequests = 1;
             let bestRoute;
-            while(apiTryRequests <= constants.maxApiTryRequests) {
-                console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Uniswap...`);
+            let gasSettingsApproval;
+            let gasSettingsSwap;
+            let sendingConfirmation = 'U';
+
+            while (sendingConfirmation.toUpperCase() != 'Y' && sendingConfirmation.toUpperCase() != 'N') {
                 
-                bestRoute = await getRoute.findBestRouteUniswap(walletSending.wallet.address, tokenOut, amountInCurrency, slippage, networkProvider.chainId, provider);
-                if (bestRoute != null) {
+                let apiTryRequests = 1;
+                while(apiTryRequests <= constants.maxApiTryRequests) {
+                    console.log(`(Attempt ${apiTryRequests} of ${constants.maxApiTryRequests}): Finding best route in Uniswap...`);
+                    
+                    bestRoute = await getRoute.findBestRouteUniswap(walletSending.wallet.address, tokenOut, amountInCurrency, slippage, networkProvider.chainId, provider);
+                    if (bestRoute != null) {
+                        break;
+                    }
+                    await inputData.delay(1000);
+                    apiTryRequests++;
+                }
+                // Checks if it couldn't find the best route to move to the next wallet
+                if (bestRoute == null) {
                     break;
                 }
-                await inputData.delay(1000);
-                apiTryRequests++;
+                
+                const amountOutReadable = bestRoute.trade.outputAmount.toSignificant(6);
+                const priceImpact = bestRoute.trade.priceImpact.toSignificant(4);
+
+                // Gas settings
+                gasSettingsApproval = new providerUtility.GasSettings(fastSwapConfig.gasLimitApprove, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
+                gasSettingsSwap = new providerUtility.GasSettings(fastSwapConfig.gasLimitSwap, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
+
+                // Best route result
+                const swapResumeString = 
+                inputData.chalk.bold('\nSwap resume\n') +
+                `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
+                `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${amountOutReadable} $${tokenOutSymbol}\n` +
+                `Price impact: ${priceImpact}%\n`;
+
+                console.log(swapResumeString);
+                writeLog(swapResumeString);
+                
+                // Sending confirmation before executing the tx
+                sendingConfirmation = await inputData.getAnswer(`Yes[Y], Next Wallet[N] or Update best route[U]: `);
+                if (sendingConfirmation.toUpperCase() == 'N') {
+                    continue;
+                } 
             }
-            // Checks if it couldn't find the best route to move to the next wallet
-            if (bestRoute == null) {
-                break;
-            }
-            
-            const amountOutReadable = bestRoute.trade.outputAmount.toSignificant(6);
-            const priceImpact = bestRoute.trade.priceImpact.toSignificant(4);
-
-            // Gas settings
-            const gasSettingsApproval = new providerUtility.GasSettings(fastSwapConfig.gasLimitApprove, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
-            const gasSettingsSwap = new providerUtility.GasSettings(fastSwapConfig.gasLimitSwap, 0, ethers.utils.parseUnits(fastSwapConfig.maxPriorityFeeGas, 'gwei'), ethers.utils.parseUnits(fastSwapConfig.maxGas, 'gwei'));
-
-            // Best route result
-            const swapResumeString = 
-            inputData.chalk.bold('\nSwap resume\n') +
-            `${constants.blockchainsData[blockchainSelected].name} - ${walletSending.name}: ${walletSending.wallet.address}\n` +
-            `Swap the ${fastSwapConfig.amountIn}: ${Number(readableAmountToSwap).toFixed(6)} $${tokenInSymbol} for ${amountOutReadable} $${tokenOutSymbol}\n` +
-            `Price impact: ${priceImpact}%\n`;
-
-            console.log(swapResumeString);
-            writeLog(swapResumeString);
 
             let approveTx;
             // Only approves if token In is a token
